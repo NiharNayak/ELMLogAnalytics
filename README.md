@@ -23,7 +23,7 @@ All other details related to logic , Please refer to comment in source code.
 Since the data is not so huge. we can test/cross-verify the count using command like
 
 ```
-cat output/pageHitByIpPerSession/part-00000| grep '1.186.78.9' | head -10```
+cat output/pageHitByIpPerSession/part-00000| grep '1.186.78.9' | head -10
 gives out put
 ```
 
