@@ -24,8 +24,9 @@ Since the data is not so huge. we can test/cross-verify the count using command 
 
 ```
 cat output/pageHitByIpPerSession/part-00000| grep '1.186.78.9' | head -10
-gives out put
 ```
+
+gives out put
 
 ```
 (Session_1,1.186.78.9,9)
@@ -35,7 +36,9 @@ gives out put
 ```
 zcat data/2015_07_22_mktplace_shop_web_log_sample.log.gz |   grep '1.186.78.9' | wc -l
 ```
+
 gives output
+
 ```
 10
 ```
