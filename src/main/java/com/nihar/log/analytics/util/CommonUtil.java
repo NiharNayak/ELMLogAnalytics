@@ -1,4 +1,4 @@
-package com.nihar.web.analytics.util;
+package com.nihar.log.analytics.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

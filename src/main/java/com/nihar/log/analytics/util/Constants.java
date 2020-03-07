@@ -1,4 +1,4 @@
-package com.nihar.web.analytics.util;
+package com.nihar.log.analytics.util;
 
 public class Constants {
   public static final String UNIQUE_URL_OUTPUT = "uniqueUrlHitPerSession";

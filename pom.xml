@@ -2,10 +2,10 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <artifactId>web-analytics</artifactId>
+  <artifactId>elm-log-analytics</artifactId>
 
   <build>
-    <finalName>test</finalName>
+    <finalName>elm-log-analytics</finalName>
     <plugins>
 
       <plugin>
@@ -19,68 +19,34 @@
       </plugin>
 
       <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
+        <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
             <configuration>
-              <artifactSet>
-                <excludes>
-                  <exclude>io.netty:netty:jar:</exclude>
-                </excludes>
-                <excludes>
-                  <exclude>hbase-shaded-netty:jar:</exclude>
-                </excludes>
-              </artifactSet>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>jackofall</shadedClassifierName>
-              <transformers>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+              <archive>
+                <manifest>
                   <mainClass>
-                    com.nihar.spark.web.analytics.run.AnalyticsMain
+                    com.nihar.log.analytics.spark.SparkJob
                   </mainClass>
-                </transformer>
-              </transformers>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
             </configuration>
             <goals>
-              <goal>shade</goal>
+              <goal>single</goal>
             </goals>
             <phase>package</phase>
           </execution>
         </executions>
         <groupId>org.apache.maven.plugins</groupId>
-        <version>3.2.1</version>
       </plugin>
 
     </plugins>
   </build>
 
   <dependencies>
-<!--    <dependency>-->
-<!--      <artifactId>hadoop-mapreduce-client-core</artifactId>-->
-<!--      <groupId>org.apache.hadoop</groupId>-->
-<!--      <version>3.1.1</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.apache.hadoop</groupId>-->
-<!--      <artifactId>hadoop-client</artifactId>-->
-<!--      <version>3.1.1</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <artifactId>hadoop-core</artifactId>-->
-<!--      <groupId>org.apache.hadoop</groupId>-->
-<!--      <version>1.2.1</version>-->
-<!--    </dependency>-->
     <dependency>
       <artifactId>lombok</artifactId>
       <groupId>org.projectlombok</groupId>
@@ -88,8 +54,8 @@
       <version>1.18.12</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_2.12</artifactId>
+      <groupId>org.apache.spark</groupId>
       <version>2.4.5</version>
     </dependency>
   </dependencies>

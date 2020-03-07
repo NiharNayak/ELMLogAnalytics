@@ -1,4 +1,4 @@
-package com.nihar.web.analytics.bin;
+package com.nihar.log.analytics.bin;
 
 import java.io.Serializable;
 import lombok.Data;

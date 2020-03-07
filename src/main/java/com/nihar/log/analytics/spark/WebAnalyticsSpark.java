@@ -1,7 +1,7 @@
-package com.nihar.web.analytics.spark;
+package com.nihar.log.analytics.spark;
 
-import com.nihar.web.analytics.bin.CompositeKeyPojo;
-import com.nihar.web.analytics.bin.IpAndAvgTime;
+import com.nihar.log.analytics.bin.CompositeKeyPojo;
+import com.nihar.log.analytics.bin.IpAndAvgTime;
 import java.util.concurrent.TimeUnit;
 import lombok.val;
 import org.apache.spark.Partitioner;
@@ -87,8 +87,9 @@ public class WebAnalyticsSpark implements Serializable {
             line ->
                 new Tuple2<>(
                     // Making Session and Ip as key to count the page hit perIp per Session
-                    line._1() + "\t" + line._2().getIp(), 1))
-        .reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum);
+                    line._1() + "," + line._2().getIp(), 1))
+        .reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum)
+        .sortByKey();
   }
 
   /**
@@ -101,7 +102,8 @@ public class WebAnalyticsSpark implements Serializable {
         .mapToPair(line -> new Tuple2<>(line._1(), line._2().getUrl()))
         .distinct() // Get distinct URl for counting unique URl per session.
         .mapToPair(line -> new Tuple2<>(line._1(), 1))
-        .reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum);
+        .reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum)
+        .sortByKey();
   }
 
   /**
@@ -111,10 +113,11 @@ public class WebAnalyticsSpark implements Serializable {
    */
   public JavaPairRDD<String, Integer> getUniqueURLHitPerSessionPerIP() {
     return timeWindowSessionize
-        .mapToPair(line -> new Tuple2<>(line._1() + "\t" + line._2().getIp(), line._2().getUrl()))
+        .mapToPair(line -> new Tuple2<>(line._1() + "," + line._2().getIp(), line._2().getUrl()))
         .distinct() // Get distinct URl for counting unique URl per session.
         .mapToPair(line -> new Tuple2<>(line._1(), 1))
-        .reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum);
+        .reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum)
+        .sortByKey();
   }
 
   /**
@@ -127,29 +130,31 @@ public class WebAnalyticsSpark implements Serializable {
     // Since don't have start time and end time of session by Ip/User.
     // Assuming total time spent per ip per unique URL for this solution.
     // The calculating average time spent per Ip/User.
-    JavaPairRDD<String, Long> timeSpentPerUrlPerIp = rawInputToKeyRdd
-    .mapToPair(
-        k -> new Tuple2<>(k._1().getIp() + "\t" + k._1().getUrl(), k._2().getTimeStamp()))
-    .groupByKey()
-    // (Ip and Url) -> timeSpent per URL
-    .mapToPair(
-        stringIterableTuple2 -> {
-          val itr = stringIterableTuple2._2().iterator();
-          long max = Long.MIN_VALUE;
-          long min = Long.MAX_VALUE;
-          while (itr.hasNext()) {
-            long current =  itr.next();
-            if (current > max) {
-              max = current;
-            }
-            if (current < min) {
-              min = current;
-            }
-          }
-          // Calculate the Total time-spent.
-          return new Tuple2<>(stringIterableTuple2._1()+","+max+","+min, max - min);
-        });
-    return timeSpentPerUrlPerIp.mapToPair(l -> new Tuple2<>(l._1().split("\t")[0], l._2()))
+    JavaPairRDD<String, Long> timeSpentPerUrlPerIp =
+        rawInputToKeyRdd
+            .mapToPair(
+                k -> new Tuple2<>(k._1().getIp() + "\t" + k._1().getUrl(), k._2().getTimeStamp()))
+            .groupByKey()
+            // (Ip and Url) -> timeSpent per URL
+            .mapToPair(
+                stringIterableTuple2 -> {
+                  val itr = stringIterableTuple2._2().iterator();
+                  long max = Long.MIN_VALUE;
+                  long min = Long.MAX_VALUE;
+                  while (itr.hasNext()) {
+                    long current = itr.next();
+                    if (current > max) {
+                      max = current;
+                    }
+                    if (current < min) {
+                      min = current;
+                    }
+                  }
+                  // Calculate the Total time-spent.
+                  return new Tuple2<>(stringIterableTuple2._1(), max - min);
+                });
+    return timeSpentPerUrlPerIp
+        .mapToPair(l -> new Tuple2<>(l._1().split("\t")[0], l._2()))
         // Finding average session time (in seconds) per Ip.
         .groupByKey()
         .map(
