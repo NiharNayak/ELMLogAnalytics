@@ -2,8 +2,6 @@ package com.nihar.log.analytics.spark;
 
 import com.nihar.log.analytics.bin.CompositeKeyPojo;
 import com.nihar.log.analytics.bin.IpAndAvgTime;
-import java.util.concurrent.TimeUnit;
-import lombok.val;
 import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -12,6 +10,9 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.storage.StorageLevel;
 import scala.Serializable;
 import scala.Tuple2;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 public class WebAnalyticsSpark implements Serializable {
   private JavaPairRDD<CompositeKeyPojo, CompositeKeyPojo> rawInputToKeyRdd;
@@ -138,7 +139,7 @@ public class WebAnalyticsSpark implements Serializable {
             // (Ip and Url) -> timeSpent per URL
             .mapToPair(
                 stringIterableTuple2 -> {
-                  val itr = stringIterableTuple2._2().iterator();
+                  Iterator<Long> itr = stringIterableTuple2._2().iterator();
                   long max = Long.MIN_VALUE;
                   long min = Long.MAX_VALUE;
                   while (itr.hasNext()) {
@@ -159,7 +160,7 @@ public class WebAnalyticsSpark implements Serializable {
         .groupByKey()
         .map(
             stringIterableTuple2 -> {
-              val itr = stringIterableTuple2._2().iterator();
+              Iterator<Long> itr = stringIterableTuple2._2().iterator();
               long sum = 0;
               long count = 0;
               while (itr.hasNext()) {

@@ -1,18 +1,31 @@
 package com.nihar.log.analytics.bin;
 
 import java.io.Serializable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class IpAndAvgTime implements Serializable, Comparable<IpAndAvgTime> {
   String ip;
   Long avgTimeSpent;
+
+  public IpAndAvgTime(String ip, Long avgTimeSpent) {
+    this.ip = ip;
+    this.avgTimeSpent = avgTimeSpent;
+  }
+
+  public String getIp() {
+    return ip;
+  }
+
+  public Long getAvgTimeSpent() {
+    return avgTimeSpent;
+  }
+
+  public void setIp(String ip) {
+    this.ip = ip;
+  }
+
+  public void setAvgTimeSpent(Long avgTimeSpent) {
+    this.avgTimeSpent = avgTimeSpent;
+  }
 
   @Override
   public int compareTo(IpAndAvgTime o) {
