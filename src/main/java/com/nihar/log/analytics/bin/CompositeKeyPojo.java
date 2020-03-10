@@ -13,6 +13,15 @@ public class CompositeKeyPojo implements Comparable<CompositeKeyPojo>, Serializa
   private Long timeStamp;
   private String url;
 
+  public CompositeKeyPojo() {
+  }
+
+  public CompositeKeyPojo(String ip, Long timeStamp, String url) {
+    this.ip = ip;
+    this.timeStamp = timeStamp;
+    this.url = url;
+  }
+
   public String getIp() {
     return ip;
   }

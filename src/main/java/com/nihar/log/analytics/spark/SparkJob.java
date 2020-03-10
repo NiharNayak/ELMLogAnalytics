@@ -4,12 +4,13 @@ import com.google.common.base.Strings;
 import com.nihar.log.analytics.bin.CompositeKeyPojo;
 import com.nihar.log.analytics.bin.IpAndAvgTime;
 import com.nihar.log.analytics.util.CommonUtil;
-import lombok.val;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
 import scala.Tuple2;
+
+import java.util.List;
 
 /**
  * @author nihar.nayak
@@ -40,18 +41,15 @@ public class SparkJob {
         jc.textFile(args[0])
             .mapToPair(
                 line -> {
-                  val list = CommonUtil.getColumnsFrom(line);
-                  val timeStamp = list.get(0);
-                  val clientIp = list.get(2).split(":")[0].trim();
+                  List<String> list = CommonUtil.getColumnsFrom(line);
+                  String timeStamp = list.get(0);
+                  String clientIp = list.get(2).split(":")[0].trim();
                   String url = list.get(11);
                   if (!Strings.isNullOrEmpty(timeStamp) && !Strings.isNullOrEmpty(timeStamp)) {
                     url = CommonUtil.getUrl(url);
                     long longTimeStamp = CommonUtil.getTimeStampFromStr(timeStamp);
 
-                    val compositeKey = new CompositeKeyPojo();
-                    compositeKey.setTimeStamp(longTimeStamp);
-                    compositeKey.setUrl(url);
-                    compositeKey.setIp(clientIp);
+                    CompositeKeyPojo compositeKey = new CompositeKeyPojo(clientIp, longTimeStamp, url);
                     return new Tuple2<>(compositeKey, compositeKey);
                   }
                   return null;
@@ -76,7 +74,7 @@ public class SparkJob {
         .saveAsTextFile(args[1] + "/avgSessionTimePerIp");
 
     // Descending order to find top 10 values.
-    val top10mostEngagingUsers = avgSessionTimePerIp.takeOrdered(10);
+    List<IpAndAvgTime> top10mostEngagingUsers = avgSessionTimePerIp.takeOrdered(10);
     System.out.println(top10mostEngagingUsers);
   }
 }

@@ -173,4 +173,32 @@ public class WebAnalyticsSpark implements Serializable {
                   stringIterableTuple2._1(), TimeUnit.MILLISECONDS.toSeconds((sum / count)));
             });
   }
+    public JavaRDD<Tuple2<String, Integer>> getTotalSessionTimePerIp() {
+        // Not sure about hot to determine the session ,
+        // Since don't have start time and end time of session by Ip/User.
+        // Assuming total time spent per ip per unique URL for this solution.
+        // The calculating average time spent per Ip/User.
+        JavaRDD<Tuple2<String, Integer>> timeSpentPerUrlPerIp =
+                rawInputToKeyRdd
+                        .mapToPair(
+                                k -> new Tuple2<>(k._1().getIp() + ","+k._1().getUrl() , 1))
+                        .reduceByKey(Integer::sum)
+                        .mapToPair(l -> new Tuple2<>(l._1.split(",")[0],l._1.split(",")[1]+","+l._2))
+                        .groupByKey()
+                        .map(stringIterableTuple2 -> {
+                            Iterator<String> itr = stringIterableTuple2._2().iterator();
+                            int max = Integer.MIN_VALUE;
+                            String mS = "";
+                            while (itr.hasNext()){
+                                String[] s = itr.next().split(",",-1);
+                                int val = Integer.parseInt(s[1]);
+                                if(val > max){
+                                    max = val;
+                                    mS = s[0];
+                                }
+                            }
+                            return new Tuple2<>(stringIterableTuple2._1+","+mS, max);
+                        });
+        return timeSpentPerUrlPerIp;
+    }
 }

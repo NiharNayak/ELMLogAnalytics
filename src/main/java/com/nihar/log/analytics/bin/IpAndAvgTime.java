@@ -11,6 +11,9 @@ public class IpAndAvgTime implements Serializable, Comparable<IpAndAvgTime> {
     this.avgTimeSpent = avgTimeSpent;
   }
 
+  public IpAndAvgTime() {
+  }
+
   public String getIp() {
     return ip;
   }
