@@ -173,26 +173,19 @@ public class WebAnalyticsSpark implements Serializable {
                   stringIterableTuple2._1(), TimeUnit.MILLISECONDS.toSeconds((sum / count)));
             });
   }
-    public JavaPairRDD<String, Integer> getTotalSessionTimePerIp() {
-        return rawInputToKeyRdd
-                .mapToPair(
-                        k -> new Tuple2<>(k._1().getIp() + ","+k._1().getUrl() , 1))
-                .reduceByKey(Integer::sum)
-                .mapToPair(l -> new Tuple2<>(l._1.split(",")[0],l._1.split(",")[1]+","+l._2))
-                .groupByKey()
-                .mapToPair(stringIterableTuple2 -> {
-                    Iterator<String> itr = stringIterableTuple2._2().iterator();
-                    int max = Integer.MIN_VALUE;
-                    String mS = "";
-                    while (itr.hasNext()){
-                        String[] s = itr.next().split(",",-1);
-                        int val = Integer.parseInt(s[1]);
-                        if(val > max){
-                            max = val;
-                            mS = s[0];
-                        }
-                    }
-                    return new Tuple2<>(stringIterableTuple2._1+","+mS, max);
-                });
-    }
+
+  public JavaPairRDD<String, String> getTotalSessionTimePerIp() {
+    return rawInputToKeyRdd
+        .mapToPair(k -> new Tuple2<>(k._1().getIp() + "," + k._1().getUrl(), 1))
+        .reduceByKey(Integer::sum)
+        .mapToPair(l -> new Tuple2<>(l._1.split(",", -1)[0], l._1.split(",", -1)[1] + "," + l._2))
+        .reduceByKey(
+            (a, b) -> {
+              String s = a;
+              if (Integer.parseInt(b.split(",", -1)[1]) > Integer.parseInt(a.split(",", -1)[1])) {
+                s = b;
+              }
+              return s;
+            });
+  }
 }
